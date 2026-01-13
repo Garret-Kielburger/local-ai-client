@@ -15,8 +15,8 @@ class DeepSeekAPI {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.timeoutInterval = 60
-        
+        request.timeoutInterval = 600
+
         let body: [String: Any] = [
             "model": "deepseek-r1:14b",
             "messages": messages,
