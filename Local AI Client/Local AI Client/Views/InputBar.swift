@@ -13,6 +13,10 @@ struct InputBar: View {
     
     @FocusState private var isFocused: Bool
     
+    private var isSendDisabled: Bool {
+        text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading
+    }
+    
     var body: some View {
         HStack(spacing: 12) {
             TextField("Type a message...", text: $text, axis: .vertical)
@@ -22,15 +26,20 @@ struct InputBar: View {
                 .cornerRadius(20)
                 .lineLimit(1...5)
                 .focused($isFocused)
-                .onSubmit(onSend)
+                .submitLabel(.send)
+                .onSubmit {
+                    if !isSendDisabled {
+                        onSend()
+                    }
+                }
                 .disabled(isLoading)
             
             Button(action: onSend) {
                 Image(systemName: "arrow.up.circle.fill")
                     .font(.system(size: 32))
-                    .foregroundColor(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading ? .gray : .blue)
+                    .foregroundColor(isSendDisabled ? .gray : .blue)
             }
-            .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
+            .disabled(isSendDisabled)
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
