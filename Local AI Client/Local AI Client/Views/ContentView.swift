@@ -8,61 +8,39 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var viewModel = ChatViewModel()
+    @StateObject private var viewModel: ChatViewModel
+    
+    init(dependencies: AppDependencies = AppDependencies()) {
+        _viewModel = StateObject(wrappedValue: dependencies.makeViewModel())
+    }
     
     var body: some View {
-            NavigationView {
-                VStack(spacing: 0) {
-                    // Messages List
-                    ScrollViewReader { proxy in
-                        ScrollView {
-                            LazyVStack(spacing: 12) {
-                                ForEach(viewModel.messages) { message in
-                                    MessageBubble(message: message)
-                                        .id(message.id)
-                                }
-                                
-                                if viewModel.isLoading {
-                                    LoadingIndicator()
-                                }
-                            }
-                            .padding()
-                        }
-                        .onChange(of: viewModel.messages.count) {
-                            if let lastMessage = viewModel.messages.last {
-                                withAnimation {
-                                    proxy.scrollTo(lastMessage.id, anchor: .bottom)
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Error Message
-                    if let error = viewModel.errorMessage {
-                        ErrorBanner(message: error) {
-                            viewModel.retryLastMessage()
-                        }
-                    }
-                    
-                    // Input Area
-                    InputBar(
-                        text: $viewModel.inputText,
-                        isLoading: viewModel.isLoading,
-                        onSend: viewModel.sendMessage
-                    )
+        NavigationView {
+            VStack(spacing: 0) {
+                MessageListView(messages: viewModel.messages, isLoading: viewModel.isLoading)
+                
+                if let error = viewModel.errorMessage {
+                    ErrorBanner(message: error, onRetry: viewModel.retryLastMessage)
                 }
-                .navigationTitle("Garret's Super AI App")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: viewModel.clearChat) {
-                            Image(systemName: "trash")
-                        }
-                        .disabled(viewModel.messages.isEmpty)
+                
+                InputBar(
+                    text: $viewModel.inputText,
+                    isLoading: viewModel.isLoading,
+                    onSend: viewModel.sendMessage
+                )
+            }
+            .navigationTitle("AI Chat")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: viewModel.clearChat) {
+                        Image(systemName: "trash")
                     }
+                    .disabled(viewModel.messages.isEmpty)
                 }
             }
         }
+    }
 }
 
 #Preview {

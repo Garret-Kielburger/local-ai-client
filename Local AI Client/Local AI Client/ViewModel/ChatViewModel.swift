@@ -8,60 +8,54 @@ import Foundation
 
 @MainActor
 class ChatViewModel: ObservableObject {
-    @Published var messages: [Message] = []
     @Published var inputText: String = ""
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
-    private let api = DeepSeekAPI()
+    private let repository: MessageRepository
+    private let sendMessageAction: SendMessageAction
+    private let clearChatAction: ClearChatAction
+    
+    var messages: [Message] {
+        repository.messages
+    }
+    
+    init(repository: MessageRepository,
+         sendMessageAction: SendMessageAction,
+         clearChatAction: ClearChatAction) {
+        self.repository = repository
+        self.sendMessageAction = sendMessageAction
+        self.clearChatAction = clearChatAction
+    }
     
     func sendMessage() {
         let trimmedText = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedText.isEmpty, !isLoading else { return }
         
-        // Add user message
-        let userMessage = Message(role: "user", content: trimmedText, timestamp: Date())
-        messages.append(userMessage)
         inputText = ""
         isLoading = true
         errorMessage = nil
         
-        // Convert messages to API format
-        let apiMessages = messages.map { message in
-            ["role": message.role, "content": message.content]
-        }
-        
-        // Call API
-        api.chat(messages: apiMessages) { [weak self] result in
-            Task { @MainActor in
-                guard let self = self else { return }
-                self.isLoading = false
-                
-                switch result {
-                case .success(let response):
-                    let assistantMessage = Message(role: "assistant", content: response, timestamp: Date())
-                    self.messages.append(assistantMessage)
-                    
-                case .failure(let error):
-                    self.errorMessage = error.localizedDescription
-                    // Remove the user message if request failed
-                    if let lastMessage = self.messages.last, lastMessage.id == userMessage.id {
-                        self.messages.removeLast()
-                    }
-                }
+        Task {
+            do {
+                _ = try await sendMessageAction.execute(userMessage: trimmedText)
+                isLoading = false
+            } catch {
+                isLoading = false
+                errorMessage = error.localizedDescription
             }
         }
     }
     
     func clearChat() {
-        messages.removeAll()
+        clearChatAction.execute()
         errorMessage = nil
     }
     
     func retryLastMessage() {
-        guard let lastMessage = messages.last, lastMessage.isUser else { return }
+        guard let lastMessage = repository.messages.last, lastMessage.isUser else { return }
         inputText = lastMessage.content
-        messages.removeLast()
+        repository.removeLastMessage()
         sendMessage()
     }
 }

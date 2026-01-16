@@ -10,11 +10,17 @@ import Foundation
 // MARK: - Models
 struct Message: Identifiable, Equatable {
     let id = UUID()
-    let role: String
+    let role: MessageRole
     let content: String
     let timestamp: Date
     
     var isUser: Bool {
-        role == "user"
+        role == .user
     }
+}
+
+
+enum MessageRole: String {
+    case user
+    case assistant
 }
