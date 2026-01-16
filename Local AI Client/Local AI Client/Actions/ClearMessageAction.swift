@@ -6,7 +6,7 @@
 //
 
 class ClearChatAction {
-    private let repository: MessageRepositoryProtocol
+    private let repository: any MessageRepositoryProtocol
     
     init(repository: MessageRepositoryProtocol) {
         self.repository = repository

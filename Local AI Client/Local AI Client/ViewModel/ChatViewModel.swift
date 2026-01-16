@@ -12,7 +12,7 @@ class ChatViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
-    private let repository: MessageRepository
+    private let repository: MessageRepositoryProtocol
     private let sendMessageAction: SendMessageAction
     private let clearChatAction: ClearChatAction
     
@@ -20,7 +20,7 @@ class ChatViewModel: ObservableObject {
         repository.messages
     }
     
-    init(repository: MessageRepository,
+    init(repository: MessageRepositoryProtocol,
          sendMessageAction: SendMessageAction,
          clearChatAction: ClearChatAction) {
         self.repository = repository

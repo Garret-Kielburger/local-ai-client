@@ -9,7 +9,7 @@ import Foundation
 
 class SendMessageAction {
     private let aiService: AIServiceProtocol
-    private let repository: MessageRepositoryProtocol
+    private let repository: any MessageRepositoryProtocol
     
     init(aiService: AIServiceProtocol, repository: MessageRepositoryProtocol) {
         self.aiService = aiService
