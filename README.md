@@ -170,7 +170,7 @@ ipconfig getifaddr en1  # for Ethernet
 
 ## **Using the Ollama API from iOS Client AI App**
 
-With Ollama API available, you'll need to update `baseURL` in `DeepSeekAPIService` to the Olama API Endpoint as follows:
+After pulling the repo and building the app, it is almost ready to go. With Ollama API available, you'll need to update `baseURL` in `DeepSeekAPIService` to the Olama API Endpoint as follows:
 
 ### **API Endpoint Structure**
 
